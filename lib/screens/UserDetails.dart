@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:qhse/screens/LoginScreen.dart'; // Asegúrate de importar la pantalla de login
 
@@ -6,6 +7,23 @@ class UserDetailsScreen extends StatelessWidget {
   final User user;
 
   UserDetailsScreen({required this.user});
+
+  final DatabaseReference gruposRef =
+      FirebaseDatabase.instance.ref().child('grupos');
+
+  Future<String?> getGroupNameByEmail(String email) async {
+    DataSnapshot snapshot =
+        (await gruposRef.orderByChild('email').equalTo(email).once()).snapshot;
+
+    if (snapshot.exists) {
+      Map<dynamic, dynamic> grupos = snapshot.value as Map<dynamic, dynamic>;
+      for (var entry in grupos.entries) {
+        Map<dynamic, dynamic> grupoData = entry.value as Map<dynamic, dynamic>;
+        return grupoData['nombre'] as String?;
+      }
+    }
+    return null; // Retorna null si no se encontró el grupo
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +48,12 @@ class UserDetailsScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircleAvatar(
-                radius: 80,
-                backgroundImage: user.photoURL != null
-                    ? NetworkImage(user.photoURL!)
-                    : const AssetImage('assets/user.png')
-                        as ImageProvider, // Imagen por defecto si no hay foto
+              Image.asset(
+                'assets/user.png', // Ruta a tu imagen de usuario predeterminada
+                fit: BoxFit
+                    .cover, // Asegura que la imagen cubra todo el área del círculo
+                width: 160, // Doble del radio
+                height: 160,
               ),
               const SizedBox(height: 40),
               Text(
@@ -52,6 +70,27 @@ class UserDetailsScreen extends StatelessWidget {
                   fontSize: 16,
                   color: Colors.grey,
                 ),
+              ),
+              const SizedBox(height: 40),
+              FutureBuilder<String?>(
+                future: getGroupNameByEmail(user.email!),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return const Text('Error al cargar el grupo');
+                  } else if (!snapshot.hasData || snapshot.data == null) {
+                    return const Text('Grupo no encontrado');
+                  } else {
+                    return Text(
+                      'Grupo: ${snapshot.data}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.blueAccent,
+                      ),
+                    );
+                  }
+                },
               ),
               const SizedBox(height: 180),
               ElevatedButton(

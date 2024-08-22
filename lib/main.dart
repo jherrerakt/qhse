@@ -39,6 +39,7 @@ class MyApp extends StatelessWidget {
           colorSchemeSeed: const Color.fromARGB(255, 0, 25, 48)
           //colorScheme: const ColorScheme.dark()
           ),
+
       routes: {
         'authChecker': (_) => AuthChecker(),
         'login': (_) => LoginScreen(),
@@ -50,7 +51,9 @@ class MyApp extends StatelessWidget {
         '/logout': (context) {
           User? user = FirebaseAuth.instance.currentUser;
           if (user != null) {
-            return UserDetailsScreen(user: user);
+            return UserDetailsScreen(
+              user: user,
+            );
           } else {
             return LoginScreen();
           }
