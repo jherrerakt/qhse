@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "935770728387",
+    "firebase_url": "https://qhse-49ff4-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "qhse-49ff4",
+    "storage_bucket": "qhse-49ff4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935770728387:android:b98cb2a11dbd7f5b43bf76",
+        "android_client_info": {
+          "package_name": "com.example.qhse"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlo-w8zCYoIK7F-hPQNzidKg1Er6gGRzY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
