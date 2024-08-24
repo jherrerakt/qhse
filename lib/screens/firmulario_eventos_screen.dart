@@ -13,7 +13,6 @@ import 'package:qhse/Utilidades/Domains/CentroTrabajo.dart';
 import 'package:qhse/Utilidades/Domains/Evento.dart';
 import 'package:qhse/Utilidades/Domains/Fact_Eventos.dart';
 import 'package:qhse/Utilidades/Domains/ParteCuerpo.dart';
-import 'package:qhse/Utilidades/Domains/PerfilxUsuario.dart';
 import 'package:qhse/Utilidades/Domains/ResponsableArea.dart';
 import 'package:qhse/Utilidades/Domains/TipoEvento.dart';
 import 'package:qhse/screens/DibujoWidget.dart';
@@ -298,7 +297,7 @@ class _FormularioEventosScreenState extends State<FormularioEventosScreen>
   }
 
   void _cargarFormulario(FactEventos evento) {
-    setState(() {
+    setState(() async {
       print('Cargando formulario');
       print(evento.toJson());
 
@@ -308,8 +307,9 @@ class _FormularioEventosScreenState extends State<FormularioEventosScreen>
       } else {
         print('No hay imagen');
         GlobalData.imagenCuerpo = "";
-        print('Imagen: ${GlobalData.imagenCuerpo}');
       }
+
+      print('Imagen: ${GlobalData.imagenCuerpo}');
 
       tipoEvento = evento.tipoEvento.isNotEmpty ? evento.tipoEvento : null;
       _getEvento();
@@ -375,18 +375,25 @@ class _FormularioEventosScreenState extends State<FormularioEventosScreen>
 
       tipoUsuario2 = evento.tipoUsuario2;
 
-      _getUsuarios();
+      print('Tipo usuario 2: $tipoUsuario2');
+
+      await _getUsuarios();
+
       String resultado = listaUsuario
           .firstWhere((ResponsableArea res) =>
-              res.idResponsableAreaSeccion == tipoUsuario2)
+              res.idResponsableAreaSeccion == evento.tipoUsuario2)
           .nombreResponsableAreaSeccion;
 
       _controller2.text = resultado;
 
+      print('Tipo usuario: $tipoUsuario');
+
       String resultado2 = listaUsuario
           .firstWhere((ResponsableArea res) =>
-              res.idResponsableAreaSeccion == tipoUsuario)
+              res.idResponsableAreaSeccion == evento.tipoUsuario)
           .nombreResponsableAreaSeccion;
+
+      print('Resultado 2: $resultado2');
 
       _controller.text = resultado2;
     });
@@ -541,37 +548,61 @@ class _FormularioEventosScreenState extends State<FormularioEventosScreen>
   }
   //-------------------------------------------
 
+  //-----------------PERFILES-----------------
+
+  final DatabaseReference gruposRef =
+      FirebaseDatabase.instance.ref().child('grupos');
+
+  Future<String?> getGroupNameByEmail(String email) async {
+    DataSnapshot snapshot =
+        (await gruposRef.orderByChild('email').equalTo(email).once()).snapshot;
+
+    if (snapshot.exists) {
+      Map<dynamic, dynamic> grupos = snapshot.value as Map<dynamic, dynamic>;
+      for (var entry in grupos.entries) {
+        Map<dynamic, dynamic> grupoData = entry.value as Map<dynamic, dynamic>;
+        return grupoData['nombre'] as String?;
+      }
+    }
+    return null; // Retorna null si no se encontró el grupo
+  }
+
+//-------------------------------------------
+
   //-----------------ETAPAS-----------------
   String? tipoEtapa;
   List<DropdownMenuItem<String>> etapas = [];
 
   Future<void> _getTiposEtapa() async {
-    List<PerfilxUsuario> perfiles = [];
-    perfiles.add(PerfilxUsuario(puPerfil: 33));
+    String? grupo = await getGroupNameByEmail(GlobalData.user.email!);
 
-    if (perfiles.first.puPerfil == 26) {
+    print('Grupo: $grupo');
+
+    if (grupo?.trim() == 'Grupo1') {
       etapas.clear();
       etapas.add(
           const DropdownMenuItem(value: "1", child: Text("1.-Notificación")));
-    } else if (perfiles.first.puPerfil == 27) {
+    } else if (grupo?.trim() == 'Grupo2') {
       etapas.clear();
       etapas.add(
           const DropdownMenuItem(value: "1", child: Text("1.-Notificación")));
       etapas.add(const DropdownMenuItem(
           value: "2", child: Text("2.-Validación notificación")));
+      etapas.add(const DropdownMenuItem(
+          value: "3", child: Text("3.-Categorización QHSE")));
       etapas.add(
           const DropdownMenuItem(value: "4", child: Text("4.-Investigación")));
-    } else if (perfiles.first.puPerfil == 30) {
+    } else if (grupo?.trim() == 'Grupo3') {
       etapas.clear();
       etapas.add(
           const DropdownMenuItem(value: "1", child: Text("1.-Notificación")));
       etapas.add(const DropdownMenuItem(
-          value: "2", child: Text("2.-Validación notificación")));
+          value: "3", child: Text("3.-Categorización QHSE")));
       etapas.add(
           const DropdownMenuItem(value: "4", child: Text("4.-Investigación")));
       etapas.add(const DropdownMenuItem(
           value: "5", child: Text("5.-Validación investigación")));
-    } else if (perfiles.first.puPerfil == 33) {
+    } else if (grupo?.trim() == 'GrupoX') {
       etapas.clear();
       etapas.add(
           const DropdownMenuItem(value: "1", child: Text("1.-Notificación")));
@@ -604,6 +635,7 @@ class _FormularioEventosScreenState extends State<FormularioEventosScreen>
     }
     setState(() {
       listaUsuario = temp;
+
       listaUsuario.sort((a, b) => a.nombreResponsableAreaSeccion
           .toLowerCase()
           .compareTo(b.nombreResponsableAreaSeccion.toLowerCase()));
@@ -1726,6 +1758,8 @@ class _FormularioEventosScreenState extends State<FormularioEventosScreen>
     final String directorio =
         "cl${DateTime.now().toUtc().year}${DateTime.now().toUtc().month}${DateTime.now().toUtc().day}${DateTime.now().toUtc().hour}${DateTime.now().toUtc().minute}${DateTime.now().toUtc().second}";
 
+    //Comprobar si la imagen del cuerpo existe
+
     String? imageUrl;
     if (File(GlobalData.imagenCuerpo).existsSync()) {
       imageUrl = await uploadImage(File(GlobalData.imagenCuerpo));
@@ -1818,8 +1852,9 @@ class _FormularioEventosScreenState extends State<FormularioEventosScreen>
       valoresParteCuerpo: valoresParteCuerpo.isNotEmpty
           ? valoresParteCuerpo.toList()
           : miEvento.valoresParteCuerpo,
-      imagenCuerpo: imageUrl ??
-          miEvento.imagenCuerpo, // Si es nulo, se asigna una cadena vacía
+      imagenCuerpo: imageUrl!.isNotEmpty
+          ? imageUrl
+          : miEvento.imagenCuerpo, // Si es nulo, se asigna una cadena vacía
       validacionResponsable: validacionresponsable,
       textomotivo2: textomotivo2.text.isNotEmpty
           ? textomotivo2.text
@@ -1980,6 +2015,7 @@ class _FormularioEventosScreenState extends State<FormularioEventosScreen>
       textodescripcion.clear();
       selectedFiles.clear();
       tipoUsuario2 = null;
+      tipoUsuario = null;
       _heartRate = 0;
       _systolic = 0;
       _diastolic = 0;
