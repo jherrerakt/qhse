@@ -7,9 +7,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
     <application
-        android:label="qhse"
+        android:label="QHSE CL"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/logoqhse">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -30,10 +30,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
-                <data
-                    android:scheme="msauth"
-                    android:host="com.example.qhse"
-                    android:path="/OuMs50ViAPy9Du1ISD%2BPvPoMbMo%3D" />
+                
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

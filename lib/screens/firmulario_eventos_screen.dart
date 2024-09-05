@@ -994,10 +994,10 @@ class _FormularioEventosScreenState extends State<FormularioEventosScreen>
       },
     );
 
-    String centro = tipoCentro ?? '';
+    String centro2 = tipoCentro ?? '';
 
     final centrotrabajo = listaCentros.firstWhere(
-      (centro) => centro.idCentroTrabajo == centro,
+      (centro) => centro.idCentroTrabajo == centro2,
       orElse: () {
         print('No se encontró el centro de trabajo seleccionado');
         return CentroTrabajo(
